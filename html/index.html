@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        form {
+            border: 1px solid silver;
+            padding: 10px;
+            margin: 10px;
+        }
+        input {
+            display: block;
+            margin: 10px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid silver;
+        }
+        button {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 2px solid blue;
+            box-sizing: border-box;
+            background-color: transparent;
+            color: blue;
+            cursor: pointer;
+        }
+        button:hover {
+            border-color: lightskyblue;
+            color: lightskyblue;
+        }
+        button:active {
+            border-color: darkblue;
+            color: darkblue;
+        }
+        .sborka-list {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid silver;
+        }
+    </style>
+</head>
+<body>
+    <h1>Continious integration app</h1>
+
+    <form>
+        <input type="text" placeholder="хэш коммита">
+        <input type="text" placeholder="команда сборки">
+        <button type="submit">Запустить сборку</button>
+    </form>
+
+    <div class="sborka-list">
+        <h2>Сборки</h2>
+        <div class="sborka-list__content">
+
+        </div>
+    </div>
+</body>
+</html>

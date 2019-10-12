@@ -2,6 +2,7 @@
 // const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,6 +13,10 @@ const PORT = 8800;
 const agentsList = [];
 
 // global.pathToRep = process.argv[2];
+
+app.get('/', (req, res) => {
+    res.sendFile('index.html', {root: path.join(__dirname, '../html')});
+})
 
 function registerAgent(info) {
     if (info.host && info.port) {
