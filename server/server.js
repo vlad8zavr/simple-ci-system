@@ -1,29 +1,21 @@
-var net = require('net');
 
-var HOST = '127.0.0.1';
-var PORT = 8800;
+const http = require('http');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-// Create a server instance, and chain the listen function to it
-// The function passed to net.createServer() becomes the event handler for the 'connection' event
-// The sock object the callback function receives UNIQUE for each connection
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-net.createServer(function(sock) {
+const PORT = 8800;
+const agentsList = [];
 
-    // We have a connection - a socket object is assigned to the connection automatically
-    console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
+// global.pathToRep = process.argv[2];
 
-    // Add a 'data' event handler to this instance of socket
-    sock.on('data', function(data) {
-        console.log('DATA ' + sock.remoteAddress + ': ' + data);
-        // Write the data back to the socket, the client will receive it as data from the server
-        sock.write('You said "' + data + '"');
-    });
+app.post('/notify_agent', (req, res) => {
+    console.log(req.body);
+});
 
-    // Add a 'close' event handler to this instance of socket
-    sock.on('close', function(data) {
-        console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
-    });
-
-}).listen(PORT, HOST);
-
-console.log('Server listening on ' + HOST +':'+ PORT);
+app.listen(PORT, '127.0.0.1', () => {
+    console.log('yo dawgs, now listen to the port 8800 (server) ...');
+});

@@ -1,24 +1,34 @@
-var net = require('net');
+const http = require('http');
+const request = require('request');
 
-var HOST = '127.0.0.1';
-var PORT = 8800;
+const HOST = '127.0.0.1';
+const PORT = 8801;
 
-var client = new net.Socket();
-client.connect(PORT, HOST, function() {
-    console.log('CONNECTED TO: ' + HOST + ':' + PORT);
-    // Write a message to the socket as soon as the client is connected, the server will receive it as message from the client
-    client.write('Get over here!');
-});
+const server = http.createServer((req, res) => {
+    //console.log('request was made:' + req.url);
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write(`PORT = ${PORT}`);
+    //res.end('Hey man!');
+})
 
-// Add a 'data' event handler for the client socket
-// data is what the server sent to this socket
-client.on('data', function(data) {
-    console.log('DATA: ' + data);
-    // Close the client socket completely
-    //client.destroy();
-});
+// const req = http.request('http://localhost:8800/notify_agent');
 
-// Add a 'close' event handler for the client socket
-client.on('close', function() {
-    console.log('Connection closed');
+const req = request.post(
+    'http://localhost:8800/notify_agent', {
+        json: {
+            host: HOST,
+            port: PORT
+        }
+    }, (error, res, body) => {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            console.log(res.statusCode, body);
+        }
+    })
+
+
+server.listen(PORT, '127.0.0.1', () => {
+    console.log('yo dawgs, now listen to the port 8801 (agent) ...');
 });
