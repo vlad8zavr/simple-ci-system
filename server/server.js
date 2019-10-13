@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const request = require('request');
+const { HtmlPart1, HtmlPart2 } = require('../html/htmlParts.js');
 
 const configFile = require('./config.json');
 
@@ -26,7 +27,6 @@ app.get('/', (req, res) => {
 
 app.get('/build/:id', (req, res) => {
     const { id } = req.params;
-
     res.sendFile(`${id}.html`, {root: path.join(__dirname, `../html/build`)});
 })
 
@@ -88,10 +88,19 @@ function buildCommandProcess(agent, clientReq, clientRes) {
 
         BUILDCODE++;
 
+        const htmlDoc = `
+        ${HtmlPart1}
+            <div>buildCode: ${BUILDCODE}</div>
+            <div>code: ${req.body.code}</div>
+            <div><strong>Result</strong></div>
+            <div>${req.body.result}</div>
+        ${HtmlPart2}
+        `
+
         const writableData = JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: req.body.code, result: req.body.result }});
         const newFilePath = path.join(__dirname, `../html/build/${BUILDCODE}.html`)
 
-        fs.writeFile(newFilePath, writableData, (error) => {
+        fs.writeFile(newFilePath, htmlDoc, (error) => {
             if(error) console.log('fs writefile error\n', error);
             console.log("Асинхронная запись файла завершена.");
         });
