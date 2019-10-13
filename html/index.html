@@ -14,7 +14,7 @@
         input {
             display: block;
             margin: 10px 0;
-            padding: 5px 10px;
+            padding: 5px 40px 5px 10px;
             border-radius: 4px;
             border: 1px solid silver;
         }
@@ -46,8 +46,8 @@
     <h1>Continious integration app</h1>
 
     <form>
-        <input type="text" placeholder="хэш коммита">
-        <input type="text" placeholder="команда сборки">
+        <input class="input-hash" type="text" placeholder="хэш коммита">
+        <input class="input-command" type="text" placeholder="команда сборки">
         <button type="submit">Запустить сборку</button>
     </form>
 
@@ -57,5 +57,32 @@
 
         </div>
     </div>
+
+    <script>
+        var form = document.querySelector('form');
+        var hashInput = document.querySelector('.input-hash');
+        var commandInput = document.querySelector('.input-command');
+
+        if (form && hashInput && commandInput) {
+            submitForm();
+        }
+
+        function submitForm() {
+            form.addEventListener('submit', async function() {
+            var hash = hashInput.value;
+            var command = commandInput.value;
+
+            const response = await fetch('/build_request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ hash: hash, command: command }),
+            });
+            //const body = await response.text();
+        })
+        }
+
+    </script>
 </body>
 </html>

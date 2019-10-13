@@ -26,6 +26,7 @@ function registerAgent(info) {
     else return false;
 }
 
+// agent registration
 app.post('/notify_agent', (req, res) => {
     console.log(req.body);
     let isRegistered = registerAgent(req.body);
@@ -34,6 +35,11 @@ app.post('/notify_agent', (req, res) => {
 
     console.log('agentList\n', agentsList);
 });
+
+app.post('/build_request', (req, res) => {
+    console.log('Build request received');
+    console.log(req.body);
+  });
 
 app.listen(PORT, HOST, () => {
     console.log('yo dawgs, now listen to the port 8800 (server) ...');
