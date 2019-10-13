@@ -2,6 +2,7 @@
 // const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 const path = require('path');
 const request = require('request');
 
@@ -21,6 +22,12 @@ let BUILDCODE = 10000;
 // draw html
 app.get('/', (req, res) => {
     res.sendFile('index.html', {root: path.join(__dirname, '../html')});
+})
+
+app.get('/build/:id', (req, res) => {
+    const { id } = req.params;
+
+    res.sendFile(`${id}.html`, {root: path.join(__dirname, `../html/build`)});
 })
 
 // agent registration
@@ -80,6 +87,15 @@ function buildCommandProcess(agent, clientReq, clientRes) {
         console.log('agentList after receive\n', agentList);
 
         BUILDCODE++;
+
+        const writableData = JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: req.body.code, result: req.body.result }});
+        const newFilePath = path.join(__dirname, `../html/build/${BUILDCODE}.html`)
+
+        fs.writeFile(newFilePath, writableData, (error) => {
+            if(error) console.log('fs writefile error\n', error);
+            console.log("Асинхронная запись файла завершена.");
+        });
+
         clientRes.json({ buildReview: { buildCode: BUILDCODE, code: req.body.code }});
         clientRes.end();
         return res.end('OK');
