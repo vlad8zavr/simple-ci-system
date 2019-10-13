@@ -90,14 +90,17 @@ function buildCommandProcess(agent, clientReq, clientRes) {
 
         const htmlDoc = `
         ${HtmlPart1}
-            <div>buildCode: ${BUILDCODE}</div>
+            <div>Код сборки: ${BUILDCODE}</div>
             <div>code: ${req.body.code}</div>
-            <div><strong>Result</strong></div>
+            <hr>
+            <div>Время начала: <strong>${req.body.timeStart}</strong></div>
+            <div>Время окончания: <strong>${req.body.timeEnd}</strong></div>
+            <hr>
+            <div><strong>Результат</strong></div>
             <div>${req.body.result}</div>
         ${HtmlPart2}
-        `
+        `;
 
-        const writableData = JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: req.body.code, result: req.body.result }});
         const newFilePath = path.join(__dirname, `../html/build/${BUILDCODE}.html`)
 
         fs.writeFile(newFilePath, htmlDoc, (error) => {

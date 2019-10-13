@@ -15,7 +15,9 @@ const HOST = '127.0.0.1';
 const PORT = configFile.agentPort;
 const SERVERPORT = configFile.serverPort;
 
-console.log('os', os.platform());
+let timeStart;
+let timeEnd;
+
 console.log('os win', !!os.platform().match('win'));
 
 const req = request.post(
@@ -78,6 +80,8 @@ function buildAction(repo, command) {
     let firstCom = arrCom.shift();
 
     let result = '';
+
+    timeStart = (new Date).toLocaleString();
     let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`});
 
     workerProcess.stdout.on('data', data => {
@@ -107,10 +111,11 @@ function isWindows() {
 }
 
 function sendBuildInfo(result, code = -1) {
+    timeEnd = (new Date).toLocaleString();
     const url = `http://localhost:${SERVERPORT}/notify_build_result`;
-    const json = { code: code, result: result };
-    //sendPostRequest(url, json);
-    makeCall(JSON.stringify(json)); 
+    const json = { code: code, timeStart: timeStart, timeEnd: timeEnd, result: result };
+    sendPostRequest(url, json);
+    //makeCall(JSON.stringify(json)); 
 }
 
 function sendPostRequest(url, json) {
