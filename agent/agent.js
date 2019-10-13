@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
+const { exec } = require('child_process');
 
 const configFile = require('./config.json');
 
@@ -32,6 +33,15 @@ const req = request.post(
 app.post('/build', (req, res) => {
     console.log('build request');
     console.log(req.body);
+
+    exec(`ls`, {cwd: `${req.body.repo}`}, (err, out) => {
+        if (err) {
+            console.error(err);
+        }
+        else {
+            console.log('out\n', out);
+        }
+    })
 })
 
 

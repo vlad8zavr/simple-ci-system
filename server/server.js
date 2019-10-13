@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const HOST = '127.0.0.1';
 const PORT = configFile.port;
+const REPO = configFile.repository;
 const agentList = [];
 
 
@@ -20,14 +21,6 @@ const agentList = [];
 app.get('/', (req, res) => {
     res.sendFile('index.html', {root: path.join(__dirname, '../html')});
 })
-
-function registerAgent(info) {
-    if (info.host && info.port) {
-        agentList.push({ host: info.host, port: info.port, isFree: true });
-        return true;
-    }
-    else return false;
-}
 
 // agent registration
 app.post('/notify_agent', (req, res) => {
@@ -49,20 +42,7 @@ app.post('/build_request', (req, res) => {
         let agent = agentList[i];
         if (agent.isFree === true) {
             agent.isFree = false;
-            const requestToAgent = request.post(
-                `http://${agent.host}:${agent.port}/build`, {
-                    json: {
-                        hash: req.body.hash,
-                        command: req.body.command
-                    }
-                }, (error, res, body) => {
-                    if (error) {
-                        console.log(error);
-                    }
-                    else {
-                        console.log(res.statusCode, body);
-                    }
-                })
+            sendBuildRequest(agent, req);
         }
         console.log('after send agentList\n', agentList);
     }
@@ -72,3 +52,29 @@ app.listen(PORT, HOST, () => {
     console.log('Server - listen to the port 8800 ...');
     console.log('configFile\n', configFile);
 });
+
+function registerAgent(info) {
+    if (info.host && info.port) {
+        agentList.push({ host: info.host, port: info.port, isFree: true });
+        return true;
+    }
+    else return false;
+}
+
+function sendBuildRequest(agent, req) {
+    const requestToAgent = request.post(
+        `http://${agent.host}:${agent.port}/build`, {
+            json: {
+                repo: REPO,
+                hash: req.body.hash,
+                command: req.body.command
+            }
+        }, (error, res, body) => {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                console.log(res.statusCode, body);
+            }
+        })
+}
