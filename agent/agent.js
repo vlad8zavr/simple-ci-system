@@ -47,12 +47,9 @@ app.post('/build', (req, res) => {
             console.error(err);
         }
         else {
-            console.log('======== out ========\n', out);
+            //console.log('======== out ========\n', out);
             
-            buildAction(repo, command)
-            // spawn
-            // stdout
-            // stderr
+            buildAction(repo, command);
         }
     })
 })
@@ -66,11 +63,6 @@ app.listen(PORT, HOST, () => {
 function buildAction(repo, command) {
     console.log('[buildAction]');
 
-    let result = '';
-
-    // console.log('os', os.platform());
-
-    //let Com = `git ls-tree -r --name-only master`;
     let arrCom = command.trim().split(' ');
 
     if (isWindows()) {
@@ -82,12 +74,8 @@ function buildAction(repo, command) {
     
     let firstCom = arrCom.shift();
 
-    console.log('firstCom', firstCom);
-    console.log('arrCom\n', arrCom);
-
-    //let workerProcess = spawn('npm.cmd', ['run', 'build'], {cwd: `${repo}`});
+    let result = '';
     let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`});
-    // let workerProcess = spawn(`${command}`, [], {cwd: `${repo}`});
 
     workerProcess.stdout.on('data', data => {
         result += data.toString();
@@ -95,15 +83,43 @@ function buildAction(repo, command) {
 
     workerProcess.stderr.on('data', err => {
         console.log('stderr: ' + err);
+        sendBuildInfo(err);
     });
 
     workerProcess.on('close', code => {
         console.log(`Exit with code ${code}`);
 
         console.log('final result\n', result);
+
+        // post request back to server with
+        // code: code <= (status ok or not)
+        // result: result
+        sendBuildInfo(result, code);
     });
 }
 
 function isWindows() {
     return !!os.platform().match('win');
+}
+
+function sendBuildInfo(result, code = -1) {
+    if (code === -1) {
+        // error
+    }
+    else {
+        const req = request.post(
+            `http://localhost:${SERVERPORT}/notify_build_result`, {
+                json: {
+                    code: code,
+                    result: result
+                }
+            }, (error, res, body) => {
+                if (error) {
+                    console.log(error);
+                }
+                else {
+                    console.log(res.statusCode, body);
+                }
+            })
+    }
 }

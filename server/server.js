@@ -32,6 +32,12 @@ app.post('/notify_agent', (req, res) => {
     console.log('agentList\n', agentList);
 });
 
+// // receive build info
+// app.post('/notify_build_result', (req, res) => {
+//     console.log('{/notify_build_result}');
+//     console.log(req.body);
+// })
+
 app.post('/build_request', (req, res) => {
     console.log('Build request received');
     console.log(req.body);
@@ -42,9 +48,12 @@ app.post('/build_request', (req, res) => {
         let agent = agentList[i];
         if (agent.isFree === true) {
             agent.isFree = false;
-            sendBuildRequest(agent, req);
+            //sendBuildRequest(agent, req);
+            buildCommandProcess(agent, req, res);
+            break;
         }
         console.log('after send agentList\n', agentList);
+        res.send('RETURN');
     }
 });
 
@@ -61,7 +70,21 @@ function registerAgent(info) {
     else return false;
 }
 
+function buildCommandProcess(agent, clientReq, clientRes) {
+    sendBuildRequest(agent, clientReq);
+
+    // receive build info
+    app.post('/notify_build_result', (req, res) => {
+        console.log('{/notify_build_result}');
+        console.log(req.body);
+
+        clientRes.send(JSON.stringify(req.body));
+        res.end('OK');
+    })
+}
+
 function sendBuildRequest(agent, req) {
+    console.log('SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT');
     const requestToAgent = request.post(
         `http://${agent.host}:${agent.port}/build`, {
             json: {

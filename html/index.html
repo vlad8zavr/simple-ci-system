@@ -84,18 +84,21 @@
 
         function submitForm() {
             form.addEventListener('submit', async function() {
-            var hash = hashInput.value;
-            var command = commandInput.value;
+                var hash = hashInput.value;
+                var command = commandInput.value;
 
-            const response = await fetch('/build_request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ hash: hash, command: command }),
-            });
-            //const body = await response.text();
-        })
+                console.log('submit');
+
+                const response = await fetch('/build_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ hash: hash, command: command }),
+                });
+                const body = await response.text();
+                console.log('response body', body);
+            })
         }
 
     </script>
