@@ -19,11 +19,14 @@
 1. `cd ./server/`
 2. `npm start`
 
+( или `node ./server/server.js` )
+
 **Агент**
 
 1. `cd ./agent/`
 2. `npm start`
 
+( или `node ./agent/agent.js` )
 
 ## Используемые пакеты
 
