@@ -15,6 +15,7 @@ const HOST = '127.0.0.1';
 const PORT = configFile.port;
 const REPO = configFile.repository;
 const agentList = [];
+let BUILDCODE = 10000;
 
 
 // draw html
@@ -78,13 +79,13 @@ function buildCommandProcess(agent, clientReq, clientRes) {
         console.log('{/notify_build_result}');
         console.log(req.body);
 
-        clientRes.send(JSON.stringify(req.body));
+        clientRes.json({ buildReview: { buildCode: BUILDCODE, code: req.body.code }});
+        // clientRes.send(JSON.stringify(req.body));
         res.end('OK');
     })
 }
 
 function sendBuildRequest(agent, req) {
-    console.log('SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT SOMETHING WAS SENT');
     const requestToAgent = request.post(
         `http://${agent.host}:${agent.port}/build`, {
             json: {

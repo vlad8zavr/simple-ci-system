@@ -13,3 +13,30 @@
 Выяснилось, что на операционных системах Windows нельзя просто так взять и вызвать `npm` через `spawn`. Для корректной работы в коде я заменяю `npm` на `npm.cmd`, если операционная система - windows.
 
 (Источник: https://github.com/nodejs/node/issues/3675)
+
+**////**
+
+```javascript
+// main page - info about builds
+{
+    buildReview: {
+        buildCode: BUILDCODE, 
+        code: req.body.code
+    }
+}
+
+// main page - no free agents
+{
+    agentFilled: true
+}
+
+// page build
+{
+    buildInfo {
+        timeStart: timeStart,
+        timeEnd: timeEnd,
+        code: code,
+        result: result
+    }
+}
+```

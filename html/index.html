@@ -44,13 +44,19 @@
             border: 1px solid silver;
             font-size: 14px;
         }
-        .sborka-list__head {
+        .sborka-list__head, .sborka-list__item {
             display: grid;
             grid-column-gap: 5px;
             grid-template-columns: 1fr 1fr;
             padding: 10px 0;
             border-bottom: 1px solid lightgray;
             color: lightslategray;
+        }
+        .sborka-list__status_success {
+            color: lightseagreen;
+        }
+        .sborka-list__status_failure {
+            color: crimson;
         }
     </style>
 </head>
@@ -68,7 +74,7 @@
         <div class="sborka-list__content">
             <div class="sborka-list__head">
                 <div class="sborka-list__ref">Ссылка</div>
-                <div class="sborka-list__ref">Статус</div>
+                <div class="sborka-list__status">Статус</div>
             </div>
         </div>
     </div>
@@ -83,7 +89,8 @@
         }
 
         function submitForm() {
-            form.addEventListener('submit', async function() {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 var hash = hashInput.value;
                 var command = commandInput.value;
 
@@ -97,8 +104,32 @@
                     body: JSON.stringify({ hash: hash, command: command }),
                 });
                 const body = await response.text();
-                console.log('response body', body);
+                insertBuildReview(JSON.parse(body));
+                // console.log('response body', body);
             })
+        }
+
+        function insertBuildReview(data) {
+            console.log('[insertBuildReview]');
+            console.log('data', data);
+
+            var hash = data.buildReview.buildCode;
+            var code = (data.buildReview.code === 0) ? 'Успешно' : 'Фиаско';
+            var colorModificator = (data.buildReview.code === 0) 
+                ? 'sborka-list__status_success' 
+                : 'sborka-list__status_failure';
+
+            var content = document.querySelector('.sborka-list__content');
+            const markup = `
+            <div class="sborka-list__item">
+                <div class="sborka-list__ref">
+                    <a href="/build/${hash}" target="_blank">${hash}</a>
+                </div>
+                <div class="sborka-list__status ${colorModificator}">${code}</div>
+            </div>`;
+            content.insertAdjacentHTML('beforeend', markup);
+
+            console.log('markup\n', markup);
         }
 
     </script>
