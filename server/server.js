@@ -81,7 +81,8 @@ function buildCommandProcess(agent, clientReq, clientRes) {
 
         BUILDCODE++;
         clientRes.json({ buildReview: { buildCode: BUILDCODE, code: req.body.code }});
-        res.end('OK');
+        clientRes.end();
+        return res.end('OK');
     })
 }
 

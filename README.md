@@ -2,6 +2,16 @@
 
 Простая система continious integration
 
+## Установка
+
+1. `git clone https://github.com/vlad8zavr/simple-ci-system.git`
+2. `cd ./simple-ci-system`
+3. `cd ./server`
+4. `npm i`
+5. `cd ../agent`
+6. `npm i`
+7. `cd ../`
+
 ## Запуск
 
 **Сервер**

@@ -1,4 +1,4 @@
-//const http = require('http');
+const http = require('http');
 const os = require('os');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -46,11 +46,13 @@ app.post('/build', (req, res) => {
         if (err) {
             console.error('checkout error\n', err);
             sendBuildInfo(err);
+            res.end('OK');
         }
         else {
             //console.log('======== out ========\n', out);
             
-            buildAction(repo, command, res);
+            buildAction(repo, command);
+            res.end('OK');
         }
     })
 })
@@ -61,7 +63,7 @@ app.listen(PORT, HOST, () => {
     console.log('configFile\n', configFile);
 });
 
-function buildAction(repo, command, resServer) {
+function buildAction(repo, command) {
     console.log('[buildAction]');
 
     let arrCom = command.trim().split(' ');
@@ -96,7 +98,6 @@ function buildAction(repo, command, resServer) {
         // code: code <= (status ok or not)
         // result: result
 
-        resServer.end();
         sendBuildInfo(result, code);
     });
 }
@@ -106,29 +107,10 @@ function isWindows() {
 }
 
 function sendBuildInfo(result, code = -1) {
-    if (code === -1) {
-        // error
-        console.log('send Error info');
-        const url = `http://localhost:${SERVERPORT}/notify_build_result`;
-        const json = { code: code, result: result };
-        sendPostRequest(url, json);
-    }
-    else {
-        const req = request.post(
-            `http://localhost:${SERVERPORT}/notify_build_result`, {
-                json: {
-                    code: code,
-                    result: result
-                }
-            }, (error, res, body) => {
-                if (error) {
-                    console.log(error);
-                }
-                else {
-                    console.log(res.statusCode, body);
-                }
-            })
-    }
+    const url = `http://localhost:${SERVERPORT}/notify_build_result`;
+    const json = { code: code, result: result };
+    //sendPostRequest(url, json);
+    makeCall(JSON.stringify(json)); 
 }
 
 function sendPostRequest(url, json) {
@@ -137,10 +119,23 @@ function sendPostRequest(url, json) {
             json: json
         }, (error, res, body) => {
             if (error) {
-                console.log(error);
+                console.log('request ERROR\n', error);
             }
-            else {
-                console.log(res.statusCode, body);
-            }
+            console.log(res.statusCode, body);
         })
+    // req.end();
+}
+
+function makeCall(body) {
+    var request = new http.ClientRequest({
+        hostname: "localhost",
+        port: SERVERPORT,
+        path: "/notify_build_result",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(body)
+        }
+    });
+    return request.end(body);
 }
