@@ -3,15 +3,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 
+const configFile = require('./config.json');
+
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const HOST = '127.0.0.1';
-const PORT = 8801;
+const PORT = configFile.agentPort;
+const SERVERPORT = configFile.serverPort;
 
 const req = request.post(
-    'http://localhost:8800/notify_agent', {
+    `http://localhost:${SERVERPORT}/notify_agent`, {
         json: {
             host: HOST,
             port: PORT
@@ -33,5 +36,6 @@ app.post('/build', (req, res) => {
 
 
 app.listen(PORT, HOST, () => {
-    console.log('yo dawgs, now listen to the port 8801 (agent) ...');
+    console.log('Agent - listen to the port 8801 ...');
+    console.log('configFile\n', configFile);
 });

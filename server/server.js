@@ -5,15 +5,16 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const request = require('request');
 
+const configFile = require('./config.json');
+
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const HOST = '127.0.0.1';
-const PORT = 8800;
+const PORT = configFile.port;
 const agentList = [];
 
-// global.pathToRep = process.argv[2];
 
 // draw html
 app.get('/', (req, res) => {
@@ -63,9 +64,11 @@ app.post('/build_request', (req, res) => {
                     }
                 })
         }
+        console.log('after send agentList\n', agentList);
     }
 });
 
 app.listen(PORT, HOST, () => {
-    console.log('yo dawgs, now listen to the port 8800 (server) ...');
+    console.log('Server - listen to the port 8800 ...');
+    console.log('configFile\n', configFile);
 });
