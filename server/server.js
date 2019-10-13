@@ -33,12 +33,6 @@ app.post('/notify_agent', (req, res) => {
     console.log('agentList\n', agentList);
 });
 
-// // receive build info
-// app.post('/notify_build_result', (req, res) => {
-//     console.log('{/notify_build_result}');
-//     console.log(req.body);
-// })
-
 app.post('/build_request', (req, res) => {
     console.log('Build request received');
     console.log(req.body);
@@ -46,16 +40,14 @@ app.post('/build_request', (req, res) => {
     // here we send build request to a free agent
     // цикл for чтобы можно было выйти break
     for (let i = 0, length = agentList.length; i < length; i++) {
-        let agent = agentList[i];
-        if (agent.isFree === true) {
-            agent.isFree = false;
+        if (agentList[i].isFree === true) {
+            agentList[i].isFree = false;
             //sendBuildRequest(agent, req);
-            buildCommandProcess(agent, req, res);
+            buildCommandProcess(agentList[i], req, res);
             break;
         }
-        console.log('after send agentList\n', agentList);
-        res.send('RETURN');
     }
+    console.log('after send agentList\n', agentList);
 });
 
 app.listen(PORT, HOST, () => {
@@ -79,8 +71,16 @@ function buildCommandProcess(agent, clientReq, clientRes) {
         console.log('{/notify_build_result}');
         console.log(req.body);
 
+        for (let i = 0, length = agentList.length; i < length; i++) {
+            if (agentList[i].host === agent.host && agentList[i].port === agent.port) {
+                agentList[i].isFree = true;
+            }
+        }
+
+        console.log('agentList after receive\n', agentList);
+
+        BUILDCODE++;
         clientRes.json({ buildReview: { buildCode: BUILDCODE, code: req.body.code }});
-        // clientRes.send(JSON.stringify(req.body));
         res.end('OK');
     })
 }
