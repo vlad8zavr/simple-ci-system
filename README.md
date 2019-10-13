@@ -104,3 +104,10 @@
     }
 }
 ```
+
+## Links
+
+https://www.endyourif.com/cant-set-headers-after-they-are-sent/
+
+
+https://www.google.ru/search?newwindow=1&client=opera&ei=2D-jXY-1J-6PmwXJ1Yb4Bw&q=node+js+request.post+cannot+set+headers&oq=node+js+request.post+cannot+set+headers&gs_l=psy-ab.3..33i22i29i30.607221.610470..611611...0.4..0.123.2606.28j4......0....1..gws-wiz.......0i71j33i160j33i21.OuF9rzLsV40&ved=0ahUKEwiPgd7nw5nlAhXux6YKHcmqAX8Q4dUDCAo&uact=5
