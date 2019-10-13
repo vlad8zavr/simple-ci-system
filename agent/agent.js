@@ -44,12 +44,13 @@ app.post('/build', (req, res) => {
 
     exec(`git checkout ${hash}`, {cwd: `${repo}`}, (err, out) => {
         if (err) {
-            console.error(err);
+            console.error('checkout error\n', err);
+            sendBuildInfo(err);
         }
         else {
             //console.log('======== out ========\n', out);
             
-            buildAction(repo, command);
+            buildAction(repo, command, res);
         }
     })
 })
@@ -60,7 +61,7 @@ app.listen(PORT, HOST, () => {
     console.log('configFile\n', configFile);
 });
 
-function buildAction(repo, command) {
+function buildAction(repo, command, resServer) {
     console.log('[buildAction]');
 
     let arrCom = command.trim().split(' ');
@@ -94,6 +95,8 @@ function buildAction(repo, command) {
         // post request back to server with
         // code: code <= (status ok or not)
         // result: result
+
+        resServer.end();
         sendBuildInfo(result, code);
     });
 }
@@ -105,6 +108,10 @@ function isWindows() {
 function sendBuildInfo(result, code = -1) {
     if (code === -1) {
         // error
+        console.log('send Error info');
+        const url = `http://localhost:${SERVERPORT}/notify_build_result`;
+        const json = { code: code, result: result };
+        sendPostRequest(url, json);
     }
     else {
         const req = request.post(
@@ -122,4 +129,18 @@ function sendBuildInfo(result, code = -1) {
                 }
             })
     }
+}
+
+function sendPostRequest(url, json) {
+    const req = request.post(
+        url, {
+            json: json
+        }, (error, res, body) => {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                console.log(res.statusCode, body);
+            }
+        })
 }
