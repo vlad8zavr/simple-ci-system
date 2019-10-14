@@ -46,11 +46,14 @@ app.post('/build', (req, res) => {
 
     exec(`git checkout ${hash}`, {cwd: `${repo}`}, (err, out) => {
         if (err) {
+            timeStart = (new Date).toLocaleString();
+
             console.error('checkout error\n', err);
             sendBuildInfo(err);
-            res.end('OK');
+            res.end('Err');
         }
         else {
+            timeStart = (new Date).toLocaleString();
             //console.log('======== out ========\n', out);
             
             buildAction(repo, command);
@@ -81,7 +84,7 @@ function buildAction(repo, command) {
 
     let result = '';
 
-    timeStart = (new Date).toLocaleString();
+    // timeStart = (new Date).toLocaleString();
     let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`});
 
     workerProcess.stdout.on('data', data => {
@@ -126,7 +129,9 @@ function sendPostRequest(url, json) {
             if (error) {
                 console.log('request ERROR\n', error);
             }
-            console.log(res.statusCode, body);
+            else {
+                console.log(res.statusCode, body);
+            }
         })
     // req.end();
 }
