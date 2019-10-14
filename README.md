@@ -142,7 +142,29 @@
 
 ## Возникшие проблемы
 
+В ходе выполнения задания я натолкнулся на проблему, которую пока не смог решить.
 
+При первом выполнении процесса сборки и отправке данных от агента на сервер - все нормально.
+
+Но при следующей отправки данных от агента на нем возникает ошибка `Can't set headers after they are sent`.
+
+**Функция, которая выполняет пост запрос на сервер**
+
+```javascript
+function sendPostRequest(url, json) {
+    const req = request.post(
+        url, {
+            json: json
+        }, (error, res, body) => {
+            if (error) {
+                console.log('request ERROR\n', error);
+            }
+            else {
+                console.log(res.statusCode, body);
+            }
+        })
+}
+```
 
 
 ## Links

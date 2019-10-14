@@ -133,7 +133,6 @@ function sendPostRequest(url, json) {
                 console.log(res.statusCode, body);
             }
         })
-    // req.end();
 }
 
 function makeCall(body) {
