@@ -77,7 +77,7 @@ function buildAction(repo, command) {
     let firstCom = arrCom.shift();
     let result = '';
 
-    let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`});
+    let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`, shell: true});
 
     workerProcess.stdout.on('data', data => {
         result += data.toString();

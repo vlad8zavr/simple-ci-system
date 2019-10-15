@@ -19,6 +19,8 @@ const REPO = configFile.repository;
 const agentList = [];
 let BUILDCODE = 10000;
 
+let RESCLIENT = null;
+let CURRENTAGENT = null;
 
 // draw html
 app.get('/', (req, res) => {
@@ -40,11 +42,27 @@ app.post('/notify_agent', (req, res) => {
     console.log('agentList\n', agentList);
 });
 
+app.post('/notify_build_result', (reqAgent, resAgent) => {
+    console.log('{/notify_build_result}');
+    console.log(reqAgent.body);
+    console.log('==================================================================');
+
+    BUILDCODE++;
+    releaseCurrentAgent(CURRENTAGENT);
+    createNewHTMLFile(reqAgent);
+    
+    resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
+
+    // RESCLIENT.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
+
+    RESCLIENT.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
+    RESCLIENT = null;
+    CURRENTAGENT = null;
+    
+})
+
 app.post('/build_request', (reqClient, resClient) => {
     console.log('Build request received');
-
-    // BUILDCODE++;
-    // resClient.json({ buildReview: { buildCode: BUILDCODE, code: 0 }});
 
     for (let i = 0, length = agentList.length; i < length; i++) {
         if (agentList[i].isFree === true) {
@@ -55,23 +73,11 @@ app.post('/build_request', (reqClient, resClient) => {
             const json = { repo: REPO, hash: reqClient.body.hash, command: reqClient.body.command };
             sendPostRequest(url, json);
 
-            //buildCommandProcess(agentList[i], reqClient, resClient);
+            RESCLIENT = resClient;
+            CURRENTAGENT = agent;
 
-            app.post('/notify_build_result', (reqAgent, resAgent) => {
-                console.log('{/notify_build_result}');
-                console.log(reqAgent.body);
-                console.log('==================================================================');
-        
-                BUILDCODE++;
-                releaseCurrentAgent(agent);
-                createNewHTMLFile(reqAgent);
-        
-                //resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
-                // resClient.end();
-                
-                resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
-                resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
-            })
+            // resClient = null;
+
             break;
         }
     }
@@ -89,40 +95,6 @@ function registerAgent(info) {
         return true;
     }
     else return false;
-}
-
-function buildCommandProcess(agent, clientReq, resClient) {
-    //sendBuildRequest(agent, clientReq);
-
-    // receive build info
-    // app.post('/notify_build_result', (reqAgent, resAgent) => {
-    //     console.log('{/notify_build_result}');
-    //     console.log(reqAgent.body);
-
-    //     releaseCurrentAgent(agent);
-    //     BUILDCODE++;
-    //     createNewHTMLFile(reqAgent);
-
-    //     resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
-        
-    //     resAgent.end('OK');
-    //     resClient.end();
-    //     //return res.end('OK');
-    // })
-}
-
-function sendBuildRequest(agent, req) {
-    request.post(
-        `http://${agent.host}:${agent.port}/build`, {
-            json: {
-                repo: REPO,
-                hash: req.body.hash,
-                command: req.body.command
-            }
-        }, (error, res, body) => {
-            if (error) console.log(error);
-            else console.log(res.statusCode, body);
-        })
 }
 
 function releaseCurrentAgent(agent) {
