@@ -152,24 +152,32 @@
 Мне удалось устранить данную проблему, но теперь каждый запрос с html формы начиная со второго не завершается. 
 Пока пытаюсь разрешить данную ситуацию.
 
-**Функция, которая выполняет пост запрос на сервер**
+Между тем новые html документы создаются и их можно открыть в браузере по адресам
+
+**`http://localhost:8800/build/10001`**
+**`http://localhost:8800/build/10002`**
+**`http://localhost:8800/build/10003`**
+
+и так далее.
+
+Также я увидел, что если отправлять с сервера на html страницу ответ в виде:
 
 ```javascript
-function sendPostRequest(url, json) {
-    const req = request.post(
-        url, {
-            json: json
-        }, (error, res, body) => {
-            if (error) {
-                console.log('request ERROR\n', error);
-            }
-            else {
-                console.log(res.statusCode, body);
-            }
-        })
-}
+resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
+resClient.end();
 ```
 
+то будет ошибка с заголовками `Can't set headers after they are sent`.
+
+Если же написать 
+
+```javascript
+resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
+```
+
+то ошибок уже не будет, но ответы начиная со второго запроса приходить уже не будут.
+
+Также была мысль, что ошибка в использовании метода `fetch` на странице html.
 
 ## Links
 

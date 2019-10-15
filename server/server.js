@@ -66,8 +66,10 @@ app.post('/build_request', (reqClient, resClient) => {
                 createNewHTMLFile(reqAgent);
         
                 //resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
+                // resClient.end();
                 
                 resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
+
                 resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
                 //return res.end('OK');
             })
