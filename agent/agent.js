@@ -20,7 +20,7 @@ let timeEnd;
 
 console.log('os win', !!os.platform().match('win'));
 
-const req = request.post(
+request.post(
     `http://localhost:${SERVERPORT}/notify_agent`, {
         json: {
             host: HOST,
@@ -39,26 +39,20 @@ const req = request.post(
 app.post('/build', (req, res) => {
     console.log('build request');
     console.log(req.body);
-
     const { repo, hash, command } = req.body;
 
-    // hash = 12d3f502
-
     exec(`git checkout ${hash}`, {cwd: `${repo}`}, (err, out) => {
+        timeStart = (new Date).toLocaleString();
         if (err) {
-            timeStart = (new Date).toLocaleString();
-
             console.error('checkout error\n', err);
+            res.end('[AGENT] CLOSED POST /build');
             sendBuildInfo(err);
-            res.end('Err');
         }
         else {
-            timeStart = (new Date).toLocaleString();
-            //console.log('======== out ========\n', out);
-            
+            res.end('[AGENT] CLOSED POST /build');
             buildAction(repo, command);
-            res.end('OK');
         }
+        // res.end('[AGENT] CLOSED POST /build');
     })
 })
 
@@ -81,30 +75,22 @@ function buildAction(repo, command) {
     }
     
     let firstCom = arrCom.shift();
-
     let result = '';
 
-    // timeStart = (new Date).toLocaleString();
     let workerProcess = spawn(firstCom, arrCom, {cwd: `${repo}`});
 
     workerProcess.stdout.on('data', data => {
         result += data.toString();
     });
-
     workerProcess.stderr.on('data', err => {
         console.log('stderr: ' + err);
         sendBuildInfo(err);
     });
-
     workerProcess.on('close', code => {
         console.log(`Exit with code ${code}`);
-
         console.log('final result\n', result);
-
-        // post request back to server with
-        // code: code <= (status ok or not)
-        // result: result
-
+        console.log('==================================================================');
+        //console.log('RESULTS HAVE BEEN MADE');
         sendBuildInfo(result, code);
     });
 }
@@ -122,7 +108,7 @@ function sendBuildInfo(result, code = -1) {
 }
 
 function sendPostRequest(url, json) {
-    const req = request.post(
+    request.post(
         url, {
             json: json
         }, (error, res, body) => {
@@ -135,16 +121,16 @@ function sendPostRequest(url, json) {
         })
 }
 
-function makeCall(body) {
-    var request = new http.ClientRequest({
-        hostname: "localhost",
-        port: SERVERPORT,
-        path: "/notify_build_result",
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(body)
-        }
-    });
-    return request.end(body);
-}
+// function makeCall(body) {
+//     var request = new http.ClientRequest({
+//         hostname: "localhost",
+//         port: SERVERPORT,
+//         path: "/notify_build_result",
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "Content-Length": Buffer.byteLength(body)
+//         }
+//     });
+//     return request.end(body);
+// }

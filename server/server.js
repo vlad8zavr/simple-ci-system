@@ -40,17 +40,38 @@ app.post('/notify_agent', (req, res) => {
     console.log('agentList\n', agentList);
 });
 
-app.post('/build_request', (req, res) => {
+app.post('/build_request', (reqClient, resClient) => {
     console.log('Build request received');
-    console.log(req.body);
 
-    // here we send build request to a free agent
-    // цикл for чтобы можно было выйти break
     for (let i = 0, length = agentList.length; i < length; i++) {
         if (agentList[i].isFree === true) {
             agentList[i].isFree = false;
             //sendBuildRequest(agent, req);
-            buildCommandProcess(agentList[i], req, res);
+
+            let agent = agentList[i];
+
+            const url = `http://${agent.host}:${agent.port}/build`;
+            const json = { repo: REPO, hash: reqClient.body.hash, command: reqClient.body.command };
+            sendPostRequest(url, json);
+
+            //buildCommandProcess(agentList[i], reqClient, resClient);
+
+            app.post('/notify_build_result', (reqAgent, resAgent) => {
+                console.log('{/notify_build_result}');
+                console.log(reqAgent.body);
+                console.log('==================================================================');
+        
+                BUILDCODE++;
+                releaseCurrentAgent(agent);
+                createNewHTMLFile(reqAgent);
+        
+                //resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
+                
+                resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
+                resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
+                //return res.end('OK');
+            })
+
             break;
         }
     }
@@ -70,52 +91,28 @@ function registerAgent(info) {
     else return false;
 }
 
-function buildCommandProcess(agent, clientReq, clientRes) {
-    sendBuildRequest(agent, clientReq);
+function buildCommandProcess(agent, clientReq, resClient) {
+    //sendBuildRequest(agent, clientReq);
 
     // receive build info
-    app.post('/notify_build_result', (req, res) => {
-        console.log('{/notify_build_result}');
-        console.log(req.body);
+    // app.post('/notify_build_result', (reqAgent, resAgent) => {
+    //     console.log('{/notify_build_result}');
+    //     console.log(reqAgent.body);
 
-        for (let i = 0, length = agentList.length; i < length; i++) {
-            if (agentList[i].host === agent.host && agentList[i].port === agent.port) {
-                agentList[i].isFree = true;
-            }
-        }
+    //     releaseCurrentAgent(agent);
+    //     BUILDCODE++;
+    //     createNewHTMLFile(reqAgent);
 
-        console.log('agentList after receive\n', agentList);
-
-        BUILDCODE++;
-
-        const htmlDoc = `
-        ${HtmlPart1}
-            <div>Код сборки: ${BUILDCODE}</div>
-            <div>code: ${req.body.code}</div>
-            <hr>
-            <div>Время начала: <strong>${req.body.timeStart}</strong></div>
-            <div>Время окончания: <strong>${req.body.timeEnd}</strong></div>
-            <hr>
-            <div><strong>Результат</strong></div>
-            <div>${req.body.result}</div>
-        ${HtmlPart2}
-        `;
-
-        const newFilePath = path.join(__dirname, `../html/build/${BUILDCODE}.html`)
-
-        fs.writeFile(newFilePath, htmlDoc, (error) => {
-            if(error) console.log('fs writefile error\n', error);
-            console.log("Асинхронная запись файла завершена.");
-        });
-
-        clientRes.json({ buildReview: { buildCode: BUILDCODE, code: req.body.code }});
-        clientRes.end();
-        return res.end('OK');
-    })
+    //     resClient.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
+        
+    //     resAgent.end('OK');
+    //     resClient.end();
+    //     //return res.end('OK');
+    // })
 }
 
 function sendBuildRequest(agent, req) {
-    const requestToAgent = request.post(
+    request.post(
         `http://${agent.host}:${agent.port}/build`, {
             json: {
                 repo: REPO,
@@ -123,8 +120,50 @@ function sendBuildRequest(agent, req) {
                 command: req.body.command
             }
         }, (error, res, body) => {
+            if (error) console.log(error);
+            else console.log(res.statusCode, body);
+        })
+}
+
+function releaseCurrentAgent(agent) {
+    for (let i = 0, length = agentList.length; i < length; i++) {
+        if (agentList[i].host === agent.host && agentList[i].port === agent.port) {
+            agentList[i].isFree = true;
+        }
+    }
+}
+
+function createNewHTMLFile(req) {
+    const htmlDoc = buildHtml(req);
+    const newFilePath = path.join(__dirname, `../html/build/${BUILDCODE}.html`)
+    fs.writeFile(newFilePath, htmlDoc, (error) => {
+        if(error) console.log('fs writefile error\n', error);
+        console.log("Асинхронная запись файла завершена.");
+    });
+}
+
+function buildHtml(req) {
+    return `
+    ${HtmlPart1}
+        <div>Код сборки: ${BUILDCODE}</div>
+        <div>code: ${req.body.code}</div>
+        <hr>
+        <div>Время начала: <strong>${req.body.timeStart}</strong></div>
+        <div>Время окончания: <strong>${req.body.timeEnd}</strong></div>
+        <hr>
+        <div><strong>Результат</strong></div>
+        <div>${req.body.result}</div>
+    ${HtmlPart2}
+    `;
+}
+
+function sendPostRequest(url, json) {
+    request.post(
+        url, {
+            json: json
+        }, (error, res, body) => {
             if (error) {
-                console.log(error);
+                console.log('request ERROR\n', error);
             }
             else {
                 console.log(res.statusCode, body);
