@@ -179,6 +179,57 @@ resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAge
 
 Также была мысль, что ошибка в использовании метода `fetch` на странице html.
 
+**NEW UPDATE**
+
+Вот что еще заметил.
+
+На сервере прием пост запроса от html формы по ручке `/build_request`.
+
+При такой структуре обработки - сервер каждый раз отвечает
+
+```javascript
+app.post('/build_request', (reqClient, resClient) => {
+
+    BUILDCODE++;
+    resClient.json({ buildReview: { buildCode: BUILDCODE, code: 0 }});
+
+});
+```
+
+Но если логика более сложная и во время обработки соверщается пост запрос на агента, а затем получение от него данных по ручке `/notify_build_result`, наконец отправка полученных данных на страницу `resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));`, в таком случае ответы начиная со 2-го либо не приходят (`res.end`), либо происходит ошибка (`res.json`)
+
+```javascript
+app.post('/build_request', (reqClient, resClient) => {
+
+    for (let i = 0, length = agentList.length; i < length; i++) {
+        if (agentList[i].isFree === true) {
+            agentList[i].isFree = false;
+
+            let agent = agentList[i];
+            const url = `http://${agent.host}:${agent.port}/build`;
+            const json = { repo: REPO, hash: reqClient.body.hash, command: reqClient.body.command };
+
+            // отправка post запроса на агента
+            sendPostRequest(url, json);
+
+            // получение post запроса от агента
+            app.post('/notify_build_result', (reqAgent, resAgent) => {
+        
+                BUILDCODE++;
+                releaseCurrentAgent(agent);
+                createNewHTMLFile(reqAgent);
+                
+                resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
+
+                // отправка данных на html страницу
+                resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
+            })
+            break;
+        }
+    }
+});
+```
+
 ## Links
 
 https://www.endyourif.com/cant-set-headers-after-they-are-sent/

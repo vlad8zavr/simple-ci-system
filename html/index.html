@@ -104,6 +104,7 @@
                     body: JSON.stringify({ hash: hash, command: command }),
                 });
                 const body = await response.text();
+                console.log('body = ', body);
                 insertBuildReview(JSON.parse(body));
             })
         }

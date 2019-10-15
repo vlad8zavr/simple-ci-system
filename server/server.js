@@ -43,13 +43,14 @@ app.post('/notify_agent', (req, res) => {
 app.post('/build_request', (reqClient, resClient) => {
     console.log('Build request received');
 
+    // BUILDCODE++;
+    // resClient.json({ buildReview: { buildCode: BUILDCODE, code: 0 }});
+
     for (let i = 0, length = agentList.length; i < length; i++) {
         if (agentList[i].isFree === true) {
             agentList[i].isFree = false;
-            //sendBuildRequest(agent, req);
 
             let agent = agentList[i];
-
             const url = `http://${agent.host}:${agent.port}/build`;
             const json = { repo: REPO, hash: reqClient.body.hash, command: reqClient.body.command };
             sendPostRequest(url, json);
@@ -69,11 +70,8 @@ app.post('/build_request', (reqClient, resClient) => {
                 // resClient.end();
                 
                 resAgent.end('[SERVER] CLOSED POST /notufy_build_result');
-
                 resClient.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
-                //return res.end('OK');
             })
-
             break;
         }
     }
