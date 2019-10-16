@@ -47,7 +47,7 @@
         .sborka-list__head, .sborka-list__item {
             display: grid;
             grid-column-gap: 5px;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             padding: 10px 0;
             border-bottom: 1px solid lightgray;
             color: lightslategray;
@@ -57,6 +57,19 @@
         }
         .sborka-list__status_failure {
             color: crimson;
+        }
+        .sborka-list__message_busy {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid crimson;
+            font-size: 14px;
+            color: crimson;
+        }
+        .sborka-list__message_busy_hidden {
+            display: none;
+        }
+        .sborka-list__item > .sborka-list__time {
+            color: black;
         }
     </style>
 </head>
@@ -72,9 +85,11 @@
     <div class="sborka-list">
         <h2>Сборки</h2>
         <div class="sborka-list__content">
+            <div class="sborka-list__message_busy sborka-list__message_busy_hidden">В данный момент все агенты заняты. Попробуйте отправить запрос позже.</div>
             <div class="sborka-list__head">
                 <div class="sborka-list__ref">Ссылка</div>
                 <div class="sborka-list__status">Статус</div>
+                <div class="sborka-list__time">Время</div>
             </div>
         </div>
     </div>
@@ -104,9 +119,21 @@
                     body: JSON.stringify({ hash: hash, command: command }),
                 });
                 const body = await response.text();
-                console.log('body = ', body);
-                insertBuildReview(JSON.parse(body));
+                makeAnAction(JSON.parse(body));
+                //insertBuildReview(JSON.parse(body));
             })
+        }
+
+        function makeAnAction(data) {
+            console.log('[makeAnAction]');
+            console.log('data', data);
+
+            if (data.buildReview) {
+                insertBuildReview(data);
+            }
+            else if (data.agentFilled) {
+                notifyAboutBusyAgents();
+            }
         }
 
         function insertBuildReview(data) {
@@ -115,6 +142,7 @@
 
             var hash = data.buildReview.buildCode;
             var code = (data.buildReview.code === 0) ? 'Успешно' : 'Фиаско';
+            var time = data.buildReview.time;
             var colorModificator = (data.buildReview.code === 0) 
                 ? 'sborka-list__status_success' 
                 : 'sborka-list__status_failure';
@@ -126,10 +154,22 @@
                     <a href="/build/${hash}" target="_blank">${hash}</a>
                 </div>
                 <div class="sborka-list__status ${colorModificator}">${code}</div>
+                <div class="sborka-list__time">${time}</div>
             </div>`;
             content.insertAdjacentHTML('beforeend', markup);
+        }
 
-            console.log('markup\n', markup);
+        function notifyAboutBusyAgents() {
+            console.log('[notifyAboutBusyAgents]');
+            console.log('ALL AGENTS ARE BUSY RIGHT NOW');
+
+            const messageNode = document.querySelector('.sborka-list__message_busy');
+            if (messageNode.classList.contains('sborka-list__message_busy_hidden')) {
+                messageNode.classList.remove('sborka-list__message_busy_hidden');
+                setTimeout(function() {
+                    messageNode.classList.add('sborka-list__message_busy_hidden');
+                }, 1800);
+            }
         }
 
     </script>

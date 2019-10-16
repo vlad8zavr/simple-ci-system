@@ -55,7 +55,7 @@ app.post('/notify_build_result', (reqAgent, resAgent) => {
 
     // RESCLIENT.json({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }});
 
-    RESCLIENT.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code }}));
+    RESCLIENT.end(JSON.stringify({ buildReview: { buildCode: BUILDCODE, code: reqAgent.body.code, time: reqAgent.body.timeEnd }}));
     RESCLIENT = null;
     CURRENTAGENT = null;
     
@@ -63,6 +63,8 @@ app.post('/notify_build_result', (reqAgent, resAgent) => {
 
 app.post('/build_request', (reqClient, resClient) => {
     console.log('Build request received');
+
+    let countBusyAgents = 0;
 
     for (let i = 0, length = agentList.length; i < length; i++) {
         if (agentList[i].isFree === true) {
@@ -77,9 +79,13 @@ app.post('/build_request', (reqClient, resClient) => {
             CURRENTAGENT = agent;
 
             // resClient = null;
-
             break;
         }
+        else countBusyAgents++;
+    }
+
+    if (countBusyAgents === agentList.length) {
+        resClient.end(JSON.stringify({ agentFilled: true }));
     }
     console.log('after send agentList\n', agentList);
 });
